@@ -1,0 +1,31 @@
+version: '3.9'
+services:
+  backend: 
+    image: tenghuy/backend:v1
+    # build: ./backend
+    # container_name: backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+
+  frontend:
+    image: tenghuy/frontend:v1
+    # build: ./frontend
+    # container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+  mongo: 
+    image: mongo:6
+    container_name: demo
+    ports:
+      - "27027:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

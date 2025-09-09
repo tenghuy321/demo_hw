@@ -40,23 +40,26 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>CRUD App (React + Node + MongoDB)</h1>
+    <div className="App h-screen flex flex-col items-center justify-center">
+      <h1 className="text-2xl font-bold my-4">Welcome to demo page</h1>
 
-      <input
-        type="text"
-        value={name}
-        placeholder="Enter name"
-        onChange={(e) => setName(e.target.value)}
-      />
-      <button onClick={addItem}>{editId ? "Update" : "Add"}</button>
+      <div className="flex items-center gap-4">
+        <input
+          type="text"
+          value={name}
+          placeholder="Enter name"
+          className="border rounded-md px-2 py-1"
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button className="px-4 py-1 bg-green-500 rounded-md text-white" onClick={addItem}>{editId ? "Update" : "Add"}</button>
+      </div>
 
-      <ul>
+      <ul className="mt-4">
         {items.map((item) => (
-          <li key={item._id}>
-            {item.name}
-            <button onClick={() => startEdit(item)}>Edit</button>
-            <button onClick={() => deleteItem(item._id)}>Delete</button>
+          <li key={item._id} className="flex gap-2 my-2">
+            <p>{item.name}</p>
+            <button className="px-4 py-1 bg-green-500 rounded-md text-white" onClick={() => startEdit(item)}>Edit</button>
+            <button className="px-4 py-1 bg-red-500 rounded-md text-white" onClick={() => deleteItem(item._id)}>Delete</button>
           </li>
         ))}
       </ul>

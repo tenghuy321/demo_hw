@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Item = require("../models/Item");
 
-// Create
 router.post("/", async (req, res) => {
   try {
     const newItem = new Item({ name: req.body.name });
@@ -13,13 +12,11 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Read
 router.get("/", async (req, res) => {
   const items = await Item.find();
   res.json(items);
 });
 
-// Update
 router.put("/:id", async (req, res) => {
   try {
     const updated = await Item.findByIdAndUpdate(
