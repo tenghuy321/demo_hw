@@ -1,31 +1,79 @@
 version: '3.9'
+
 services:
-  backend: 
-    image: tenghuy/backend:v1
-    # build: ./backend
-    # container_name: backend
+  # Reverse proxy
+  nginx-proxy:
+    image: jwilder/nginx-proxy:alpine
+    container_name: nginx-proxy
+    restart: always
     ports:
-      - "5000:5000"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - nginx-proxy
+
+  # SSL companion for Let's Encrypt
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: nginx-letsencrypt
+    restart: always
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+      - ./nginx/vhost.d:/etc/nginx/vhost.d
+      - ./nginx/html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - nginx-proxy
+    networks:
+      - nginx-proxy
+
+  # Backend API
+  backend:
+    image: tenghuy/backend:v1
+    restart: always
+    expose:
+      - "5000"
     env_file:
       - ./backend/.env
+    environment:
+      - VIRTUAL_HOST=api.lthtitan.online
+      - LETSENCRYPT_HOST=api.lthtitan.online
+      - LETSENCRYPT_EMAIL=your@email.com
+    networks:
+      - nginx-proxy
     depends_on:
       - mongo
 
+  # Frontend
   frontend:
-    image: tenghuy/frontend:v1
-    # build: ./frontend
-    # container_name: frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-  mongo: 
-    image: mongo:6
-    container_name: demo
-    ports:
-      - "27027:27017"
+    image: tenghuy/frontend:v2
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - VIRTUAL_HOST=demo.lthtitan.online
+      - LETSENCRYPT_HOST=demo.lthtitan.online
+      - LETSENCRYPT_EMAIL=your@email.com
+    networks:
+      - nginx-proxy
+
+  # Database
+  mongo:
+    image: mongo:7
+    restart: always
     volumes:
-      - mongo-data:/data/db
+      - mongo_data:/data/db
+    networks:
+      - nginx-proxy
 
 volumes:
-  mongo-data:
+  mongo_data:
+
+networks:
+  nginx-proxy:
+    external: true
